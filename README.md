@@ -32,6 +32,7 @@
      implementation 'com.extscreen.sdk:messenger-client:1.1.4'   //超级投屏引入
    }
 
-⚠️超级投屏使用方式请详见：[超级投屏](https://github.com/hanliang-tech/es-cast-client-android)
+⚠️超级投屏使用方式请详见：[超级投屏](https://github.com/hanliang-tech/es-cast-client-android) 
+
 ⚠️电视端快应用apk详见：[电视端快应用](https://github.com/chengyeah/HuanCapture/blob/main/tvapp/huanCapture_general_2.9.1532_20250428181803_release.apk)
   
