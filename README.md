@@ -1,3 +1,8 @@
+## 功能特点：
+ - 通过WebRTC实现点对点视频推流
+ - 翻转摄像头
+ - 镜像
+
 ## 演示截图：
 <p align="center">
   <img src="./pic/img.png" width="45%" />
@@ -7,11 +12,6 @@
 <p align="center">
   <img src="./pic/img_2.png" width="90%" />
 </p>
-
-## 功能特点：
- - 通过WebRTC实现点对点视频推流
- - 翻转摄像头
- - 镜像
 
 ## 使用方法：
 1. 电视端安装快应用 `huanCapture_general_2.9.1532_20250428181803_release.apk`，并打开；
