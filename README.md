@@ -1,8 +1,12 @@
 ## 演示截图：
-![image](https://github.com/user-attachments/assets/79ac40bd-c7fd-43f0-875d-6919556a1210)
-![image](https://github.com/user-attachments/assets/ab950ccb-a94a-46a6-bb5b-af97ba5f92c2)
-![image](https://github.com/user-attachments/assets/e63795b7-460a-49ba-ab6b-48b90a10c1c8)
-![image](https://github.com/user-attachments/assets/3f27fe6d-982d-4ac8-9557-7c10b0d27283)
+<p align="center">
+  <img src="./pic/img.png" width="45%" />
+  <img src="./pic/img_1.png" width="45%" />
+</p>
+
+<p align="center">
+  <img src="./pic/img_2.png" width="90%" />
+</p>
 
 ## 功能特点：
  - 通过WebRTC实现点对点视频推流
