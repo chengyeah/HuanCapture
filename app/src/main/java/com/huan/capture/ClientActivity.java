@@ -226,7 +226,7 @@ public class ClientActivity extends AppCompatActivity {
                 .put("sdpMid", iceCandidate.sdpMid)
                 .put("sdpMLineIndex", iceCandidate.sdpMLineIndex)
                 .put("candidate", iceCandidate.sdp);
-        EsCommand cmd = EsCommand.makeCustomCommand("OnLinkEvent")
+        EsCommand cmd = EsCommand.makeCustomCommand("OnLinkWebRTC")
                 .setEventData(args);
 
         EsMessenger.get().sendCommand(this, ConfigParams.mEsDevice, cmd);
@@ -234,7 +234,7 @@ public class ClientActivity extends AppCompatActivity {
 
     private void sendOfferToTV(SessionDescription sessionDescription) {
         String sdpFormat = sessionDescription.description.replaceAll("\r\n", "#");
-
+        Log.i("--==>", "发送offer is : " + sessionDescription.description);
         // 分片发送
         int maxLength = 500;
         int totalChunks = (int) Math.ceil((double) sdpFormat.length() / maxLength);
@@ -249,7 +249,7 @@ public class ClientActivity extends AppCompatActivity {
                     .put("sdp", chunk)
                     .put("chunkNumber", chunkNumber)
                     .put("totalChunks", totalChunks);
-            EsCommand cmd = EsCommand.makeCustomCommand("OnLinkEvent")
+            EsCommand cmd = EsCommand.makeCustomCommand("OnLinkWebRTC")
                     .setEventData(args);
 
             EsMessenger.get().sendCommand(this, ConfigParams.mEsDevice, cmd);

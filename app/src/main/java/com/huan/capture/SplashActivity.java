@@ -63,14 +63,14 @@ public class SplashActivity extends AppCompatActivity {
             ConfigParams.mEsDevice = device;
             tvDeviceName.setText("已选择设备：" + device.getDeviceName() + "(" + device.getDeviceIp() + ":" + device.getDevicePort() + ")");
             Toast.makeText(SplashActivity.this, "已选择设备：" + device.getDeviceName(), Toast.LENGTH_SHORT).show();
-            //            EsCommand cmd = EsCommand.makeEsAppCommand("debug")
-//                    .put("uri", "192.168.40.100:38989")
-//                    .setEventData(
-//                            new EsCommand.CmdArgs("home")
-//                                    .put("url", "https://hub.quicktvui.com/repository/public-files/video/dev/mp4/4.0/mp4-4.0.mp4")
-//                    );
-//
-//            EsMessenger.get().sendCommand(SplashActivity.this, device, cmd);
+            EsCommand cmd = EsCommand.makeEsAppCommand("debug")
+                    .put("uri", "192.168.40.80:38989")
+                    .setEventData(
+                            new EsCommand.CmdArgs("home")
+                                    .put("url", "https://hub.quicktvui.com/repository/public-files/video/dev/mp4/4.0/mp4-4.0.mp4")
+                    );
+
+            EsMessenger.get().sendCommand(SplashActivity.this, device, cmd);
         });
 
         rlvBox.setAdapter(deviceAdapter);
