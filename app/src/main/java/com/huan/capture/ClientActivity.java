@@ -234,7 +234,8 @@ public class ClientActivity extends AppCompatActivity {
 
     private void sendOfferToTV(SessionDescription sessionDescription) {
         String sdpFormat = sessionDescription.description.replaceAll("\r\n", "#");
-        Log.i("--==>", "发送offer is : " + sessionDescription.description);
+        Log.i("--==>", "原始offer数据 : " + sessionDescription.description);
+        Log.i("--==>", "处理后offer数据 : " + sdpFormat);
         // 分片发送
         int maxLength = 500;
         int totalChunks = (int) Math.ceil((double) sdpFormat.length() / maxLength);
