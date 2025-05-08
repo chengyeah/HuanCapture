@@ -19,3 +19,20 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep WebRTC classes
+-keep class org.webrtc.** { *; }
+-keep class io.github.100mslive.** { *; }
+
+# Keep JNI methods
+-keepclassmembers class * {
+    native <methods>;
+}
+
+# Keep all your custom adapter and observer classes
+-keep class com.huan.capture.** { *; }
+
+# 如果使用了 Gson 或其他反射框架，也需要保留字段
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}

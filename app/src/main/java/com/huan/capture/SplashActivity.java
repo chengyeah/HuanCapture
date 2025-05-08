@@ -60,6 +60,7 @@ public class SplashActivity extends AppCompatActivity {
         rlvBox.setLayoutManager(new LinearLayoutManager(this));
         deviceAdapter = new DeviceAdapter(this);
         deviceAdapter.setOnItemClickListener(device -> {
+            EsMessenger.get().stop();
             ConfigParams.mEsDevice = device;
             tvDeviceName.setText("已选择设备：" + device.getDeviceName() + "(" + device.getDeviceIp() + ":" + device.getDevicePort() + ")");
             Toast.makeText(SplashActivity.this, "已选择设备：" + device.getDeviceName(), Toast.LENGTH_SHORT).show();

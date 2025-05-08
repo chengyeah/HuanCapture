@@ -29,16 +29,15 @@ public class ActionBean {
     }
 
     public static class ActionBeanTDO {
-        private String type;
+        private String action;
         private String sdp;
 
-        // Getters and Setters
-        public String getType() {
-            return type;
+        public String getAction() {
+            return action;
         }
 
-        public void setType(String type) {
-            this.type = type;
+        public void setAction(String action) {
+            this.action = action;
         }
 
         public String getSdp() {
@@ -47,14 +46,6 @@ public class ActionBean {
 
         public void setSdp(String sdp) {
             this.sdp = sdp;
-        }
-
-        @Override
-        public String toString() {
-            return "ActionBeanTDO{" +
-                    "type='" + type + '\'' +
-                    ", sdp='" + sdp + '\'' +
-                    '}';
         }
     }
 }

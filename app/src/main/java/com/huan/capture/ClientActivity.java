@@ -59,11 +59,13 @@ public class ClientActivity extends AppCompatActivity {
                 ActionBean actionBean = gson.fromJson(esEvent.getData(), ActionBean.class);
                 switch (actionBean.getAction()) {
                     case "answer":
-                        String args = actionBean.getArgs();
+//                        String args = actionBean.getArgs();
+//                        Log.i("--==>", "onMessage------>: " + actionBean.getArgs());
+//                        ActionBean.ActionBeanTDO actionBeanTDO = gson.fromJson(esEvent.getData(), ActionBean.ActionBeanTDO.class);
                         Log.i("--==>", "onMessage------>: " + actionBean.getArgs());
-                        args = args.replace("{action=answer, sdp=", "");
-                        args = args.replace("}", "");
-                        handleAnswer(new SessionDescription(ANSWER, args));
+                        ActionBean.ActionBeanTDO actionBeanTDO = gson.fromJson(actionBean.getArgs(), ActionBean.ActionBeanTDO.class);
+                        Log.i("--==>", "onMessage------====>: " + actionBeanTDO.getSdp());
+                        handleAnswer(new SessionDescription(ANSWER, actionBeanTDO.getSdp()));
                         break;
                     case "switchCamera":
                         switchCamera();
@@ -101,7 +103,7 @@ public class ClientActivity extends AppCompatActivity {
         // 用PeerConnectionFactory创建VideoSource
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(480, 640, 30);
+        videoCapturer.startCapture(320, 240, 26);
 
         localView = findViewById(R.id.localView);
         localView.setMirror(false);
@@ -164,7 +166,7 @@ public class ClientActivity extends AppCompatActivity {
 
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(480, 640, 30);
+        videoCapturer.startCapture(320, 240, 26);
 
         videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
         videoTrack.addSink(localView);
@@ -260,28 +262,51 @@ public class ClientActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (!mediaStreamLocal.videoTracks.isEmpty()) {
-            VideoTrack oldVideoTrack = mediaStreamLocal.videoTracks.get(0);
-            mediaStreamLocal.removeTrack(oldVideoTrack);
-            oldVideoTrack.dispose();
+
+        if (peerConnectionLocal != null) {
+            peerConnectionLocal.dispose();
+            peerConnectionLocal = null;
         }
 
-        try {
-            videoCapturer.stopCapture();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            e.printStackTrace();
-            Log.e("ClientActivity", "Failed to stop capture", e);
-            return;
+        if (peerConnectionFactory != null) {
+            peerConnectionFactory.dispose();
+            peerConnectionFactory = null;
         }
 
-        videoCapturer.dispose();
-        videoSource.dispose();
+        if (videoCapturer != null) {
+            try {
+                videoCapturer.stopCapture();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            videoCapturer.dispose();
+            videoCapturer = null;
+        }
+
+        if (videoSource != null) {
+            videoSource.dispose();
+            videoSource = null;
+        }
+
+        if (videoTrack != null) {
+            try {
+                videoTrack.dispose(); // 安全调用
+            } catch (Exception ignored) {
+            }
+            videoTrack = null;
+        }
 
         if (eglBase != null) {
             eglBase.release();
+            eglBase = null;
+        }
+
+        if (localView != null) {
+            localView.release();
+            localView = null;
         }
     }
+
 
     private VideoCapturer createCameraCapturer(boolean isFront) {
         Camera1Enumerator enumerator = new Camera1Enumerator(false);
