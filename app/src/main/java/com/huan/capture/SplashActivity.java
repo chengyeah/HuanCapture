@@ -2,8 +2,11 @@ package com.huan.capture;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -22,7 +25,6 @@ import java.util.List;
 
 import eskit.sdk.support.messenger.client.EsMessenger;
 import eskit.sdk.support.messenger.client.bean.EsDevice;
-import eskit.sdk.support.messenger.client.core.EsCommand;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
@@ -30,6 +32,7 @@ public class SplashActivity extends AppCompatActivity {
     private DeviceAdapter deviceAdapter;
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
     private final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA};
+    private MediaProjectionManager projectionManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,6 +104,12 @@ public class SplashActivity extends AppCompatActivity {
 
         btnSend.setOnClickListener(view -> {
             Intent intent = new Intent(this, OldClientActivity.class);
+            startActivity(intent);
+        });
+
+        Button btnScreen = findViewById(R.id.btnScreen);
+        btnScreen.setOnClickListener(view -> {
+            Intent intent = new Intent(this, ScreenActivity.class);
             startActivity(intent);
         });
     }

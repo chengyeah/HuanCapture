@@ -30,6 +30,17 @@
             android:visibility="gone" />
 
         <Button
+            android:id="@+id/btnScreen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_selector"
+            android:text="开始录屏"
+            android:textColor="@drawable/button_text_selector" />
+
+        <Button
             android:id="@+id/btnClient"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -37,7 +48,7 @@
             android:layout_marginRight="6dp"
             android:layout_weight="1"
             android:background="@drawable/button_selector"
-            android:text="开始"
+            android:text="开始推流"
             android:textColor="@drawable/button_text_selector" />
 
         <Button

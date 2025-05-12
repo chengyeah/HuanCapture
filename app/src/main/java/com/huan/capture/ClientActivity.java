@@ -103,7 +103,7 @@ public class ClientActivity extends AppCompatActivity {
         // 用PeerConnectionFactory创建VideoSource
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(320, 240, 26);
+        videoCapturer.startCapture(320, 240, 15);
 
         localView = findViewById(R.id.localView);
         localView.setMirror(false);
@@ -166,7 +166,7 @@ public class ClientActivity extends AppCompatActivity {
 
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(320, 240, 26);
+        videoCapturer.startCapture(320, 240, 15);
 
         videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
         videoTrack.addSink(localView);
