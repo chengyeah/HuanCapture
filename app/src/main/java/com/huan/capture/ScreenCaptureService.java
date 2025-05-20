@@ -36,18 +36,25 @@ public class ScreenCaptureService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        // 初始化 EGL 和 PeerConnectionFactory（一次性）
         eglBase = EglBase.create();
-        PeerConnectionFactory.initialize(
-                PeerConnectionFactory.InitializationOptions.builder(this)
-                        .createInitializationOptions());
+        eglBase.createDummyPbufferSurface();
+        eglBase.makeCurrent();
 
+        // 第一步：创建PeerConnectionFactory
+        PeerConnectionFactory.initialize(PeerConnectionFactory.InitializationOptions
+                .builder(this)
+                .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
+        options.networkIgnoreMask = 0;
+        DefaultVideoEncoderFactory defaultVideoEncoderFactory =
+                new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true);
+
+        DefaultVideoDecoderFactory defaultVideoDecoderFactory =
+                new DefaultVideoDecoderFactory(eglBase.getEglBaseContext());
         factory = PeerConnectionFactory.builder()
                 .setOptions(options)
-                .setVideoEncoderFactory(new DefaultVideoEncoderFactory(
-                        eglBase.getEglBaseContext(), true, true))
-                .setVideoDecoderFactory(new DefaultVideoDecoderFactory(eglBase.getEglBaseContext()))
+                .setVideoEncoderFactory(defaultVideoEncoderFactory)
+                .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .createPeerConnectionFactory();
     }
 
@@ -83,7 +90,7 @@ public class ScreenCaptureService extends Service {
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
 
         try {
-            videoCapturer.startCapture(480, 640, 16);
+            videoCapturer.startCapture(720, 1280, 20);
         } catch (Exception e) {
             Log.e("ScreenCaptureService", "startCapture failed", e);
             stopSelf();
@@ -130,6 +137,8 @@ public class ScreenCaptureService extends Service {
         }
         if (videoSource != null) videoSource.dispose();
         if (eglBase != null) eglBase.release();
+
+        stopForeground(true);
     }
 
     @Nullable

@@ -1,15 +1,19 @@
 package com.huan.capture;
 
+import static androidx.core.app.ServiceCompat.stopForeground;
 import static org.webrtc.SessionDescription.Type.ANSWER;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,7 +53,7 @@ public class ScreenActivity extends AppCompatActivity {
     private SurfaceViewRenderer localView;
     private MediaStream mediaStreamLocal;
     private EglBase eglBase;
-    private boolean isMirror = false;
+    private boolean isOpenPermission = false;
     private VideoCapturer videoCapturer;
     private VideoSource videoSource;
     private VideoTrack videoTrack;
@@ -63,8 +67,11 @@ public class ScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_screen);
 
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("MaxBitrateBps", "800_000")); // 800kbps
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "0")); // 不接收视频
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "0")); // 不接收音频
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("VideoCodec", "H264"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("MaxBitrateBps", "800000")); // 注意不要加下划线
+
 
         ConfigParams.getInstance().setOnClientMessageListener(new ConfigParams.OnClientMessageListener() {
             @Override
@@ -92,39 +99,33 @@ public class ScreenActivity extends AppCompatActivity {
                 .builder(this)
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
-        options.networkIgnoreMask = 0;
-        DefaultVideoEncoderFactory defaultVideoEncoderFactory =
-                new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true);
-        DefaultVideoDecoderFactory defaultVideoDecoderFactory =
-                new DefaultVideoDecoderFactory(eglBase.getEglBaseContext());
+        options.disableEncryption = true;
+        options.disableNetworkMonitor = true;
         peerConnectionFactory = PeerConnectionFactory.builder()
+                .setVideoDecoderFactory(new DefaultVideoDecoderFactory(eglBase.getEglBaseContext()))
+                .setVideoEncoderFactory(new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true))
                 .setOptions(options)
-                .setVideoEncoderFactory(defaultVideoEncoderFactory)
-                .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .createPeerConnectionFactory();
-
-//        SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBase.getEglBaseContext());
-
-        // 创建 VideoCapturer
-//        videoCapturer = createCameraCapturer(true);
-//        // 用PeerConnectionFactory创建VideoSource
-//        videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
-//        videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-//        videoCapturer.startCapture(320, 240, 15);
 
         localView = findViewById(R.id.localView);
         localView.setMirror(false);
         localView.init(eglBase.getEglBaseContext(), null);
 
-        // 用PeerConnectionFactory和VideoSource创建VideoTrack
-//        videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
-//        videoTrack.addSink(localView);
+        initView();
 
-//        mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
-//        mediaStreamLocal.addTrack(videoTrack);
+        MediaCodecList codecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
+        for (MediaCodecInfo codecInfo : codecList.getCodecInfos()) {
+            Log.d("--==>", "解码器: " + codecInfo.getName());
+        }
+    }
 
+    private void initView(){
         Button btnCall = findViewById(R.id.btnCall);
         btnCall.setOnClickListener(view -> {
+            if (!isOpenPermission) {
+                Toast.makeText(this, "请先打开权限", Toast.LENGTH_SHORT).show();
+                return;
+            }
             call(mediaStreamLocal);
         });
 
@@ -141,7 +142,7 @@ public class ScreenActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_SCREEN_CAPTURE && resultCode == RESULT_OK && data != null) {
-
+            isOpenPermission = true;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 // 设置回调
                 ScreenCaptureService.setCallback(videoTrack -> runOnUiThread(() -> {
@@ -232,6 +233,9 @@ public class ScreenActivity extends AppCompatActivity {
                 sendOfferToTV(sessionDescription);
             }
         }, mediaConstraints);
+
+
+
     }
 
     private void handleAnswer(SessionDescription sessionDescription) {
@@ -252,7 +256,6 @@ public class ScreenActivity extends AppCompatActivity {
 
     private void sendOfferToTV(SessionDescription sessionDescription) {
         String sdpFormat = sessionDescription.description.replaceAll("\r\n", "#");
-        Log.i("--==>", "原始offer数据 : " + sessionDescription.description);
         Log.i("--==>", "处理后offer数据 : " + sdpFormat);
         // 分片发送
         int maxLength = 500;
@@ -325,5 +328,7 @@ public class ScreenActivity extends AppCompatActivity {
         if (serviceIntent != null) {
             stopService(serviceIntent);
         }
+        // 停止前台服务并移除通知
+
     }
 }
