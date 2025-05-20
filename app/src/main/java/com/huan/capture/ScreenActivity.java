@@ -99,8 +99,7 @@ public class ScreenActivity extends AppCompatActivity {
                 .builder(this)
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
-        options.disableEncryption = true;
-        options.disableNetworkMonitor = true;
+        options.networkIgnoreMask = 0;
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setVideoDecoderFactory(new DefaultVideoDecoderFactory(eglBase.getEglBaseContext()))
                 .setVideoEncoderFactory(new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true))
