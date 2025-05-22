@@ -25,7 +25,11 @@ import org.webrtc.ext.H264OnlyDecoderFactory;
 import org.webrtc.ext.H264OnlyEncoderFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <br>
@@ -33,6 +37,8 @@ import java.util.List;
  * <br>
  */
 public class BaseWebRTCActivity extends BaseTransferActivity {
+
+    private static final String TAG = "[-WebRTCActivity-]";
 
     private static final int REQUEST_CODE_SCREEN_CAPTURE = 1;
 
@@ -94,11 +100,13 @@ public class BaseWebRTCActivity extends BaseTransferActivity {
         mEglBase = EglBase.create();
         PeerConnectionFactory.initialize(
                 PeerConnectionFactory.InitializationOptions
-                        .builder(this)
+                        .builder(getApplicationContext())
                         .setEnableInternalTracer(true)
                         .createInitializationOptions()
         );
 
+        PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
+        options.networkIgnoreMask = 0;
         EglBase.Context eglBaseContext = mEglBase.getEglBaseContext();
         VideoEncoderFactory videoEncoderFactory =
                 new DefaultVideoEncoderFactory(eglBaseContext, true, true);
@@ -109,7 +117,9 @@ public class BaseWebRTCActivity extends BaseTransferActivity {
         mConnectionFactory = PeerConnectionFactory.builder()
                 .setVideoEncoderFactory(videoEncoderFactory)
                 .setVideoDecoderFactory(videoDecoderFactory)
+                .setOptions(options)
                 .createPeerConnectionFactory();
+
 
         Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO);
 
@@ -143,21 +153,19 @@ public class BaseWebRTCActivity extends BaseTransferActivity {
             throw new RuntimeException("创建PeerConnection失败");
         }
 
-        mConnection.addTrack(screenCapTack); // 替代 addStream
+        mConnection.addTrack(screenCapTack);
 
         MediaConstraints constraints = new MediaConstraints();
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", "20"));
-//        constraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", "20"));
-//        constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "false"));
-//        constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
-//        constraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", "20"));
+        constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"));
+        constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "false"));
 
         mConnection.createOffer(new SdpAdapter("OFFER") {
             @Override
             public void onCreateSuccess(SessionDescription sdp) {
 
                 String originSdp1 = sdp.description;
-//                sdp = new SessionDescription(SessionDescription.Type.OFFER, preferCodec(sdp.description));
+                sdp = new SessionDescription(SessionDescription.Type.OFFER, preferCodec(sdp.description, "H264", false));
                 String originSdp2 = sdp.description;
 
                 Log.d("sunrain", "协商 原始 手机 +++++++++++++=== " + originSdp1);
@@ -169,8 +177,8 @@ public class BaseWebRTCActivity extends BaseTransferActivity {
             }
         }, constraints);
 
-        mWebRTCStatsMonitor = new WebRTCStatsMonitor(mConnection, 1000);
-        mWebRTCStatsMonitor.start();
+//        mWebRTCStatsMonitor = new WebRTCStatsMonitor(mConnection, 1000);
+//        mWebRTCStatsMonitor.start();
     }
 
     @Override
@@ -180,26 +188,82 @@ public class BaseWebRTCActivity extends BaseTransferActivity {
         mConnection.setRemoteDescription(new SdpAdapter("ANSWER"), sdp);
     }
 
-    private String preferCodec(String sdp) {
-//        String[] lines = sdp.split("\r\n");
-//        for (int i = 0; i < lines.length; i++) {
-//            if(lines[i].startsWith("m=video")) {
-//                lines[i] = "m=video 9 UDP/TLS/RTP/SAVPF 96";
-//                continue;
-//            }
-//
-//            if(lines[i].startsWith("a=rtpmap:96")) {
-//                lines[i] = "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;max-fr=20;max-fs=8160";
-//                continue;
-//            }
-//
-//            if(lines[i].contains("msid:-")) {
-//                lines[i] = lines[i].replace("msid:-", "msid:default");
-//                continue;
-//            }
-//        }
-//        return String.join("\r\n", lines);
-        return sdp.replace("m=video 9 UDP/TLS/RTP/SAVPF 96 97 98 99 100", "m=video 9 UDP/TLS/RTP/SAVPF 96");
+    private static String movePayloadTypesToFront(List<String> preferredPayloadTypes, String mLine) {
+        // The format of the media description line should be: m=<media> <port> <proto> <fmt> ...
+        final List<String> origLineParts = Arrays.asList(mLine.split(" "));
+        if (origLineParts.size() <= 3) {
+            Log.e(TAG, "Wrong SDP media description format: " + mLine);
+            return null;
+        }
+        final List<String> header = origLineParts.subList(0, 3);
+        final List<String> unpreferredPayloadTypes =
+                new ArrayList<String>(origLineParts.subList(3, origLineParts.size()));
+        unpreferredPayloadTypes.removeAll(preferredPayloadTypes);
+        // Reconstruct the line with |preferredPayloadTypes| moved to the beginning of the payload
+        // types.
+        final List<String> newLineParts = new ArrayList<String>();
+        newLineParts.addAll(header);
+        newLineParts.addAll(preferredPayloadTypes);
+        newLineParts.addAll(unpreferredPayloadTypes);
+        return joinString(newLineParts, " ", false /* delimiterAtEnd */);
+    }
+
+    private static String preferCodec(String sdpDescription, String codec, boolean isAudio) {
+        final String[] lines = sdpDescription.split("\r\n");
+        final int mLineIndex = findMediaDescriptionLine(isAudio, lines);
+        if (mLineIndex == -1) {
+            Log.w(TAG, "No mediaDescription line, so can't prefer " + codec);
+            return sdpDescription;
+        }
+        // A list with all the payload types with name |codec|. The payload types are integers in the
+        // range 96-127, but they are stored as strings here.
+        final List<String> codecPayloadTypes = new ArrayList<String>();
+        // a=rtpmap:<payload type> <encoding name>/<clock rate> [/<encoding parameters>]
+        final Pattern codecPattern = Pattern.compile("^a=rtpmap:(\\d+) " + codec + "(/\\d+)+[\r]?$");
+        for (int i = 0; i < lines.length; ++i) {
+            Matcher codecMatcher = codecPattern.matcher(lines[i]);
+            if (codecMatcher.matches()) {
+                codecPayloadTypes.add(codecMatcher.group(1));
+            }
+        }
+        if (codecPayloadTypes.isEmpty()) {
+            Log.w(TAG, "No payload types with name " + codec);
+            return sdpDescription;
+        }
+
+        final String newMLine = movePayloadTypesToFront(codecPayloadTypes, lines[mLineIndex]);
+        if (newMLine == null) {
+            return sdpDescription;
+        }
+        Log.d(TAG, "Change media description from: " + lines[mLineIndex] + " to " + newMLine);
+        lines[mLineIndex] = newMLine;
+        return joinString(Arrays.asList(lines), "\r\n", true /* delimiterAtEnd */);
+    }
+
+    private static int findMediaDescriptionLine(boolean isAudio, String[] sdpLines) {
+        final String mediaDescription = isAudio ? "m=audio " : "m=video ";
+        for (int i = 0; i < sdpLines.length; ++i) {
+            if (sdpLines[i].startsWith(mediaDescription)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static String joinString(
+            Iterable<? extends CharSequence> s, String delimiter, boolean delimiterAtEnd) {
+        Iterator<? extends CharSequence> iter = s.iterator();
+        if (!iter.hasNext()) {
+            return "";
+        }
+        StringBuilder buffer = new StringBuilder(iter.next());
+        while (iter.hasNext()) {
+            buffer.append(delimiter).append(iter.next());
+        }
+        if (delimiterAtEnd) {
+            buffer.append(delimiter);
+        }
+        return buffer.toString();
     }
 
     @Override

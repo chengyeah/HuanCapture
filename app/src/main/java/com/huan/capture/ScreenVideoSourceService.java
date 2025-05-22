@@ -35,6 +35,8 @@ public class ScreenVideoSourceService extends Service {
 
     private static Callback mCallback;
 
+    private ScreenCapturerAndroid mScreenCapturerAndroid;
+
     public interface Callback {
         Intent getMediaProjectionPermissionResultData();
 
@@ -65,7 +67,7 @@ public class ScreenVideoSourceService extends Service {
         }
 
         if(mCallback != null) {
-            ScreenCapturerAndroid screenCapturerAndroid = new ScreenCapturerAndroid(mCallback.getMediaProjectionPermissionResultData(), new MediaProjection.Callback() {
+            mScreenCapturerAndroid = new ScreenCapturerAndroid(mCallback.getMediaProjectionPermissionResultData(), new MediaProjection.Callback() {
                 @Override
                 public void onStop() {
                     super.onStop();
@@ -74,15 +76,15 @@ public class ScreenVideoSourceService extends Service {
             });
             SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", mCallback.getEglBaseContext(), true);
             PeerConnectionFactory factory = mCallback.getPeerConnectionFactory();
-            VideoSource videoSource = factory.createVideoSource(screenCapturerAndroid.isScreencast());
+            VideoSource videoSource = factory.createVideoSource(mScreenCapturerAndroid.isScreencast());
 
             int width = 720;
             int height = 1280;
             int fps = 15;
 
-            screenCapturerAndroid.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-            screenCapturerAndroid.startCapture(width, height, fps);
-            videoSource.setIsScreencast(screenCapturerAndroid.isScreencast());
+            mScreenCapturerAndroid.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
+            mScreenCapturerAndroid.startCapture(width, height, fps);
+            videoSource.setIsScreencast(mScreenCapturerAndroid.isScreencast());
             videoSource.adaptOutputFormat(width, height,fps);
 
             VideoTrack screenCapTack = factory.createVideoTrack("screenCapTack", videoSource);
@@ -95,7 +97,7 @@ public class ScreenVideoSourceService extends Service {
                 public void onFrame(VideoFrame frame) {
                     frameCount++;
                     long time = System.currentTimeMillis();
-                    if(time - lastTime > 1000) {
+                    if(time - lastTime >= 1000) {
                         Log.d("sunrain", "FPS: " + frameCount + " " + frame.getRotatedWidth() + "x" + frame.getRotatedHeight());
                         frameCount = 0;
                         lastTime = time;
@@ -127,6 +129,10 @@ public class ScreenVideoSourceService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mScreenCapturerAndroid != null) {
+            mScreenCapturerAndroid.dispose();
+            mScreenCapturerAndroid = null;
+        }
         mCallback = null;
     }
 }

@@ -20,15 +20,15 @@ public class H264Encoder implements VideoEncoder {
     @Override
     public VideoCodecStatus initEncode(Settings settings, Callback encodeCallback) {
         // 强制修改配置，例如帧率、码率等
-//        settings = new Settings(
-//                settings.numberOfCores,
-//                settings.width,
-//                settings.height,
-//                2_000_000, // 2Mbps 固定码率
-//                20,        // 固定帧率
-//                1,         // 1路码流
-//                false      // 不自动分辨率调整
-//        );
+        settings = new Settings(
+                settings.numberOfCores,
+                settings.width,
+                settings.height,
+                2000, // 2Mbps 固定码率
+                15,        // 固定帧率
+                1,         // 1路码流
+                false      // 不自动分辨率调整
+        );
         return baseEncoder.initEncode(settings, encodeCallback);
     }
 

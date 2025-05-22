@@ -15,6 +15,7 @@ import android.content.res.Resources.NotFoundException;
 import android.graphics.Point;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -180,9 +181,19 @@ public class SurfaceViewRenderer extends SurfaceView
   }
 
   // VideoSink interface.
+  int frameCount;
+  long lastTime;
   @Override
   public void onFrame(VideoFrame frame) {
     eglRenderer.onFrame(frame);
+    frameCount++;
+    long time = System.currentTimeMillis();
+    if(System.currentTimeMillis() - lastTime >= 1000) {
+      Log.d("RTC_STATS", "FPS:" + frameCount);
+
+      frameCount = 0;
+      lastTime = time;
+    }
   }
 
   // View layout interface.
