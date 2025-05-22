@@ -58,9 +58,8 @@
             android:layout_marginLeft="6dp"
             android:layout_weight="1"
             android:background="@drawable/button_selector"
-            android:text="TV端"
-            android:textColor="@drawable/button_text_selector"
-            android:visibility="gone" />
+            android:text="测试二"
+            android:textColor="@drawable/button_text_selector"/>
     </LinearLayout>
 
     <TextView

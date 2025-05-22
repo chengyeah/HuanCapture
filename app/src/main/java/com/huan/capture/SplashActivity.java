@@ -2,10 +2,8 @@ package com.huan.capture;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.widget.Button;
@@ -96,7 +94,11 @@ public class SplashActivity extends AppCompatActivity {
         });
 
         btnServer.setOnClickListener(view -> {
-            Intent intent = new Intent(this, TVActivity.class);
+            if (ConfigParams.mEsDevice == null) {
+                Toast.makeText(this, "请先选择投屏设备", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent intent = new Intent(this, PushVideoActivity.class);
             startActivity(intent);
         });
 
