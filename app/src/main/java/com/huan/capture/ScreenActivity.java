@@ -8,11 +8,13 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -72,7 +74,6 @@ public class ScreenActivity extends AppCompatActivity {
         mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("VideoCodec", "H264"));
         mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("MaxBitrateBps", "800000"));
 
-
         ConfigParams.getInstance().setOnClientMessageListener(new ConfigParams.OnClientMessageListener() {
             @Override
             public void onMessage(EsEvent esEvent) {
@@ -117,6 +118,13 @@ public class ScreenActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        VideoView videoView = findViewById(R.id.videoView);
+        videoView.setVideoURI(Uri.parse("https://svip.ryplay16.com/20250521/56186_e2d6cad4/index.m3u8"));
+        videoView.setOnPreparedListener(mp -> {
+            mp.setLooping(true);
+        });
+        videoView.start();
+
         Button btnCall = findViewById(R.id.btnCall);
         btnCall.setOnClickListener(view -> {
             if (!isOpenPermission) {
@@ -206,9 +214,11 @@ public class ScreenActivity extends AppCompatActivity {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
-                peerConnectionLocal.setLocalDescription(new SdpAdapter("local set local"), sessionDescription);
-                // 发送 offer 到 TV 端
-                sendOfferToTV(sessionDescription);
+                peerConnectionLocal.setLocalDescription(new SdpAdapter("local set local", () -> {
+                    // 发送 offer 到 TV 端
+                    sendOfferToTV(sessionDescription);
+                }), sessionDescription);
+
             }
         }, mediaConstraints);
 

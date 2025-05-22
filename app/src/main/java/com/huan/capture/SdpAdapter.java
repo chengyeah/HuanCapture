@@ -10,12 +10,16 @@ import org.webrtc.SessionDescription;
  */
 
 public class SdpAdapter implements SdpObserver {
-
-
+    private OnSdpAdapterListener mListener;
     private String tag;
 
     public SdpAdapter(String tag) {
         this.tag = "chao " + tag;
+    }
+
+    public SdpAdapter(String tag, OnSdpAdapterListener listener) {
+        this.mListener = listener;
+        this.tag = tag;
     }
 
     private void log(String s) {
@@ -30,6 +34,9 @@ public class SdpAdapter implements SdpObserver {
     @Override
     public void onSetSuccess() {
         log("onSetSuccess ");
+        if (mListener != null) {
+            mListener.onSetSuccess();
+        }
     }
 
     @Override
@@ -40,5 +47,9 @@ public class SdpAdapter implements SdpObserver {
     @Override
     public void onSetFailure(String s) {
         log("onSetFailure " + s);
+    }
+
+    public interface OnSdpAdapterListener {
+        void onSetSuccess();
     }
 }
