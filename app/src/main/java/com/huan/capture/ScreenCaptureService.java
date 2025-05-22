@@ -26,6 +26,11 @@ public class ScreenCaptureService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent == null) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             Notification notification = createNotification();
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);

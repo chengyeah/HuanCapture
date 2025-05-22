@@ -28,7 +28,7 @@ public class SdpAdapter implements SdpObserver {
 
     @Override
     public void onCreateSuccess(SessionDescription sessionDescription) {
-        log("onCreateSuccess " + sessionDescription);
+
     }
 
     @Override

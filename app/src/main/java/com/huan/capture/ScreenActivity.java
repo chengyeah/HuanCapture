@@ -119,7 +119,7 @@ public class ScreenActivity extends AppCompatActivity {
 
     private void initView() {
         VideoView videoView = findViewById(R.id.videoView);
-        videoView.setVideoURI(Uri.parse("https://svip.ryplay16.com/20250521/56186_e2d6cad4/index.m3u8"));
+        videoView.setVideoURI(Uri.parse("https://cdn.ryplay10.com/20250518/41280_78e877d9/index.m3u8"));
         videoView.setOnPreparedListener(mp -> {
             mp.setLooping(true);
         });
