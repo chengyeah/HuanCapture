@@ -182,10 +182,10 @@ public class ScreenActivity extends AppCompatActivity {
         SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBase.getEglBaseContext());
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(1080, 1920, 30);
+        videoCapturer.startCapture(240, 520, 20);
 
         videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
-        videoSource.adaptOutputFormat(1080, 1920, 30);
+        videoSource.adaptOutputFormat(240, 520, 20);
 
         mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
         mediaStreamLocal.addTrack(videoTrack);
@@ -211,8 +211,6 @@ public class ScreenActivity extends AppCompatActivity {
             }
         });
 
-//        peerConnectionLocal.addStream(mediaStreamLocal);
-
         VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("video", videoSource);
         peerConnectionLocal.addTrack(videoTrack);
 
@@ -220,15 +218,29 @@ public class ScreenActivity extends AppCompatActivity {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
+                String str = applyBitrateSettings(sessionDescription.description);
+                SessionDescription sdp = new SessionDescription(sessionDescription.type, str);
                 peerConnectionLocal.setLocalDescription(new SdpAdapter("local set local", () -> {
                     // 发送 offer 到 TV 端
-                    sendOfferToTV(sessionDescription);
-                }), sessionDescription);
+                    sendOfferToTV(sdp);
+                }), sdp);
 
             }
         }, mediaConstraints);
 
         startStatsLogging(peerConnectionLocal);
+    }
+
+    private String applyBitrateSettings(String sdp) {
+        sdp = sdp.replace("a=rtpmap:96 H264/90000",
+                "a=rtpmap:96 H264/90000\r\na=framerate:15");
+
+        // 设置码率参数
+        sdp = sdp.replace(
+                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
+                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;x-google-start-bitrate=300;x-google-min-bitrate=300;x-google-max-bitrate=300"
+        );
+        return sdp;
     }
 
     private void handleAnswer(SessionDescription sessionDescription) {
