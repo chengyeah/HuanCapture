@@ -37,8 +37,8 @@ import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
-//import org.webrtc.factory.H264OnlyVideoDecoderFactory;
-//import org.webrtc.factory.H264OnlyVideoEncoderFactory;
+import org.webrtc.factory.H264OnlyVideoDecoderFactory;
+import org.webrtc.factory.H264OnlyVideoEncoderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,11 +104,9 @@ public class ScreenActivity extends AppCompatActivity {
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         options.networkIgnoreMask = 0;
-        //关闭加密
-        options.disableEncryption = true;
         peerConnectionFactory = PeerConnectionFactory.builder()
-                .setVideoDecoderFactory(new DefaultVideoDecoderFactory(eglBase.getEglBaseContext()))
-                .setVideoEncoderFactory(new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true))
+                .setVideoDecoderFactory(new H264OnlyVideoDecoderFactory(eglBase.getEglBaseContext()))
+                .setVideoEncoderFactory(new H264OnlyVideoEncoderFactory(eglBase.getEglBaseContext()))
                 .setOptions(options)
                 .createPeerConnectionFactory();
 
