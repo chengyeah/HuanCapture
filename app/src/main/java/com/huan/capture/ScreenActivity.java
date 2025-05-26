@@ -234,7 +234,6 @@ public class ScreenActivity extends AppCompatActivity {
     private String applyBitrateSettings(String sdp) {
         sdp = sdp.replace("a=rtpmap:96 H264/90000",
                 "a=rtpmap:96 H264/90000\r\na=framerate:15");
-
         // 设置码率参数
         sdp = sdp.replace(
                 "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
