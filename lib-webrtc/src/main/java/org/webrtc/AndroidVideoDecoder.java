@@ -246,7 +246,7 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
     rec_count++;
     long time = System.currentTimeMillis();
     if(time - rec_time >= 1000) {
-      Log.w("RTC_STATS", "接收FPS:" + dec_count);
+      Log.i("RTC_STATS", "接收FPS:" + rec_count);
       rec_count = 0;
     }
     rec_time = time;
