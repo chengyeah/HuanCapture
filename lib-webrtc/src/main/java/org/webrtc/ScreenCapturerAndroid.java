@@ -104,8 +104,9 @@ public class ScreenCapturerAndroid implements VideoCapturer, VideoSink {
       final int width, final int height, final int ignoredFramerate) {
     checkNotDisposed();
 
-    this.width = width;
-    this.height = height;
+    // Reduce resolution from original (e.g., 1080p)
+    this.width = 720;
+    this.height = 1280;
 
     mediaProjection = mediaProjectionManager.getMediaProjection(
         Activity.RESULT_OK, mediaProjectionPermissionResultData);
@@ -190,7 +191,7 @@ public class ScreenCapturerAndroid implements VideoCapturer, VideoSink {
   private void createVirtualDisplay() {
     surfaceTextureHelper.setTextureSize(width, height);
     virtualDisplay = mediaProjection.createVirtualDisplay("WebRTC_ScreenCapture", width, height,
-        VIRTUAL_DISPLAY_DPI, DISPLAY_FLAGS, new Surface(surfaceTextureHelper.getSurfaceTexture()),
+        240, DISPLAY_FLAGS, new Surface(surfaceTextureHelper.getSurfaceTexture()),
         null /* callback */, null /* callback handler */);
   }
 
@@ -198,6 +199,10 @@ public class ScreenCapturerAndroid implements VideoCapturer, VideoSink {
   @Override
   public void onFrame(VideoFrame frame) {
     numCapturedFrames++;
+    // Drop every Nth frame for performance (example: drop 1 out of every 4 frames)
+//    if (numCapturedFrames % 4 != 0) {
+//      return;
+//    }
     capturerObserver.onFrameCaptured(frame);
   }
 

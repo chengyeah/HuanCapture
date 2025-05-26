@@ -33,21 +33,12 @@
             android:textColor="@drawable/button_text_selector" />
 
         <Button
-            android:id="@+id/btnSwitchCamera"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="24dp"
-            android:background="@drawable/button_selector"
-            android:text="切换摄像头"
-            android:textColor="@drawable/button_text_selector" />
-
-        <Button
             android:id="@+id/btnFlipCamera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="24dp"
             android:background="@drawable/button_selector"
-            android:text="镜像"
+            android:text="开启权限"
             android:textColor="@drawable/button_text_selector" />
 
 

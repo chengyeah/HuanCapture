@@ -2,6 +2,7 @@ package org.webrtc.factory;
 
 import org.webrtc.DefaultVideoDecoderFactory;
 import org.webrtc.EglBase;
+import org.webrtc.HardwareVideoDecoderFactory;
 import org.webrtc.VideoCodecInfo;
 import org.webrtc.VideoDecoder;
 import org.webrtc.VideoDecoderFactory;
@@ -10,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class H264OnlyVideoDecoderFactory implements VideoDecoderFactory {
-    private final DefaultVideoDecoderFactory internalFactory;
+    private final HardwareVideoDecoderFactory internalFactory;
 
     public H264OnlyVideoDecoderFactory(EglBase.Context eglContext) {
-        internalFactory = new DefaultVideoDecoderFactory(eglContext);
+        internalFactory = new HardwareVideoDecoderFactory(eglContext);
     }
 
     @Override

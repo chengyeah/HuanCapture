@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import java.util.List;
 
 import eskit.sdk.support.messenger.client.EsMessenger;
 import eskit.sdk.support.messenger.client.bean.EsDevice;
+import eskit.sdk.support.messenger.client.core.EsCommand;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
@@ -82,7 +84,6 @@ public class SplashActivity extends AppCompatActivity {
         Button btnClient = findViewById(R.id.btnClient);
         Button btnServer = findViewById(R.id.btnServer);
         Button btnSearch = findViewById(R.id.btnSearch);
-        Button btnSend = findViewById(R.id.btnSend);
 
         btnClient.setOnClickListener(view -> {
             if (ConfigParams.mEsDevice == null) {
@@ -104,14 +105,67 @@ public class SplashActivity extends AppCompatActivity {
 
         btnSearch.setOnClickListener(view -> EsMessenger.get().search(this));
 
-        btnSend.setOnClickListener(view -> {
+        Button btnScreen = findViewById(R.id.btnScreen);
+        btnScreen.setOnClickListener(view -> {
+            Intent intent = new Intent(this, ScreenActivity.class);
+            startActivity(intent);
+        });
+
+        Button btnDeviceInfo = findViewById(R.id.btnDeviceInfo);
+        btnDeviceInfo.setOnClickListener(view -> {
+            EsCommand.CmdArgs args = new EsCommand.CmdArgs("")
+                    .put("screenWidth", "1080")
+                    .put("screenHeight", "1920")
+                    .put("deviceName", "huan")
+                    .put("deviceVersion", "1.0")
+                    .put("osType", "Android");
+
+            EsCommand cmd = EsCommand.makeCustomCommand("OnConfigParams")
+                    .setEventData(args);
+            EsMessenger.get().sendCommand(this, ConfigParams.mEsDevice, cmd);
+        });
+
+        Button btnDisconnect = findViewById(R.id.btnDisconnect);
+        btnDisconnect.setOnClickListener(view -> {
+            EsCommand.CmdArgs args = new EsCommand.CmdArgs("")
+                    .put("status", "disconnect")
+                    .put("message", "主动断开");
+
+            EsCommand cmd = EsCommand.makeCustomCommand("OnDisconnect")
+                    .setEventData(args);
+            EsMessenger.get().sendCommand(this, ConfigParams.mEsDevice, cmd);
+        });
+
+        Button btnCompleted = findViewById(R.id.btnCompleted);
+        btnCompleted.setOnClickListener(view -> {
+            EsCommand.CmdArgs args = new EsCommand.CmdArgs("")
+                    .put("status", "completed")
+                    .put("message", "体态评估完成");
+
+            EsCommand cmd = EsCommand.makeCustomCommand("OnCompleted")
+                    .setEventData(args);
+            EsMessenger.get().sendCommand(this, ConfigParams.mEsDevice, cmd);
+        });
+
+        EditText etWsIP = findViewById(R.id.etWsIP);
+        Button btnWsTv = findViewById(R.id.btnWsTv);
+        btnWsTv.setOnClickListener(view -> {
+            Config.SOCKET_IP = etWsIP.getText().toString().trim();
+            Intent intent = new Intent(this, TVActivity.class);
+            startActivity(intent);
+        });
+
+        Button btnWsCamera = findViewById(R.id.btnWsCamera);
+        btnWsCamera.setOnClickListener(view -> {
+            Config.SOCKET_IP = etWsIP.getText().toString().trim();
             Intent intent = new Intent(this, OldClientActivity.class);
             startActivity(intent);
         });
 
-        Button btnScreen = findViewById(R.id.btnScreen);
-        btnScreen.setOnClickListener(view -> {
-            Intent intent = new Intent(this, ScreenActivity.class);
+        Button btnWsScreen = findViewById(R.id.btnWsScreen);
+        btnWsScreen.setOnClickListener(view -> {
+            Config.SOCKET_IP = etWsIP.getText().toString().trim();
+            Intent intent = new Intent(this, OldClientActivityV2.class);
             startActivity(intent);
         });
     }

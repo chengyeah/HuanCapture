@@ -16,6 +16,7 @@
 
 package org.webrtc
 
+import android.util.Log
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -56,8 +57,8 @@ class SimulcastAlignedVideoEncoderFactory(
       streamSettings = settings
       val future = executor.submit(
         Callable {
-          Logging.v(
-            TAG,
+          Log.i(
+            "--==>",
             """initEncode() thread=${Thread.currentThread().name} [${Thread.currentThread().id}]
                         |  encoder=${encoder.implementationName}
                         |  streamSettings:

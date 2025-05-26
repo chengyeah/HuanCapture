@@ -13,8 +13,10 @@ import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
+import org.webrtc.MediaStreamTrack;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
+import org.webrtc.RtpTransceiver;
 import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoTrack;
@@ -22,6 +24,9 @@ import org.webrtc.VideoTrack;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * TV 服务端+webrtc接收端
+ */
 public class TVActivity extends AppCompatActivity {
     private PeerConnectionFactory peerConnectionFactory;
     private PeerConnection peerConnectionRemote;
@@ -65,7 +70,7 @@ public class TVActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void initSocket() {
         mWebSocketManager = new WebSocketManager(this);
-        mWebSocketManager.startServer("192.168.80.9", 38383);
+        mWebSocketManager.startServer(Config.SOCKET_IP, 38383);
         mWebSocketManager.setOnOfferReceivedListener(this::handleOffer);
         mWebSocketManager.setOnAnswerReceivedListener(this::handleAnswer);
         mWebSocketManager.setOnIceCandidateReceivedListener(this::handleIceCandidate);
@@ -89,6 +94,16 @@ public class TVActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     localVideoTrack.addSink(remoteView);
                 });
+            }
+
+            @Override
+            public void onTrack(RtpTransceiver transceiver) {
+                super.onTrack(transceiver);
+                Log.i("--==>", "onTrack");
+                MediaStreamTrack track = transceiver.getReceiver().track();
+                if (track instanceof VideoTrack) {
+                    runOnUiThread(() -> ((VideoTrack) track).addSink(remoteView));
+                }
             }
         });
     }

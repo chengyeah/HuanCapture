@@ -121,12 +121,6 @@ public class ClientActivity extends AppCompatActivity {
             call(mediaStreamLocal);
         });
 
-        //切换摄像头
-        Button btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
-        btnSwitchCamera.setOnClickListener(view -> {
-            switchCamera();
-        });
-
         // 镜像
         Button btnFlipCamera = findViewById(R.id.btnFlipCamera);
         btnFlipCamera.setOnClickListener(view -> {
@@ -166,7 +160,7 @@ public class ClientActivity extends AppCompatActivity {
 
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(320, 240, 15);
+        videoCapturer.startCapture(720, 1080, 15);
 
         videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
         videoTrack.addSink(localView);
@@ -202,7 +196,11 @@ public class ClientActivity extends AppCompatActivity {
         });
 
         // 只向 peerConnectionLocal 添加本地媒体流
-        peerConnectionLocal.addStream(localMediaStream);
+//        peerConnectionLocal.addStream(localMediaStream);
+
+        VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("video", videoSource);
+        peerConnectionLocal.addTrack(videoTrack);
+
         peerConnectionLocal.createOffer(new SdpAdapter("local offer sdp") {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {

@@ -21,6 +21,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
 
+import org.webrtc.DefaultVideoDecoderFactory;
+import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
@@ -35,8 +37,8 @@ import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
-import org.webrtc.factory.H264OnlyVideoDecoderFactory;
-import org.webrtc.factory.H264OnlyVideoEncoderFactory;
+//import org.webrtc.factory.H264OnlyVideoDecoderFactory;
+//import org.webrtc.factory.H264OnlyVideoEncoderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +64,7 @@ public class ScreenActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_SCREEN_CAPTURE = 1;
     private Intent serviceIntent;
     private Timer statsTimer;
+    private MediaStream mediaStreamLocal;
 
 
     @Override
@@ -72,7 +75,9 @@ public class ScreenActivity extends AppCompatActivity {
         mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "0"));
         mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "0"));
         mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("VideoCodec", "H264"));
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("MaxBitrateBps", "800000"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("MaxBitrateBps", "100000"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("enableCpuOveruseDetection", "false"));
+
 
         ConfigParams.getInstance().setOnClientMessageListener(new ConfigParams.OnClientMessageListener() {
             @Override
@@ -99,9 +104,11 @@ public class ScreenActivity extends AppCompatActivity {
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         options.networkIgnoreMask = 0;
+        //关闭加密
+        options.disableEncryption = true;
         peerConnectionFactory = PeerConnectionFactory.builder()
-                .setVideoDecoderFactory(new H264OnlyVideoDecoderFactory(eglBase.getEglBaseContext()))
-                .setVideoEncoderFactory(new H264OnlyVideoEncoderFactory(eglBase.getEglBaseContext()))
+                .setVideoDecoderFactory(new DefaultVideoDecoderFactory(eglBase.getEglBaseContext()))
+                .setVideoEncoderFactory(new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true))
                 .setOptions(options)
                 .createPeerConnectionFactory();
 
@@ -179,11 +186,12 @@ public class ScreenActivity extends AppCompatActivity {
         SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBase.getEglBaseContext());
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(720, 1080, 15);
+        videoCapturer.startCapture(1080, 1920, 30);
 
         videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
+        videoSource.adaptOutputFormat(1080, 1920, 30);
 
-        MediaStream mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
+        mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
         mediaStreamLocal.addTrack(videoTrack);
 
         if (peerConnectionLocal != null) {
@@ -206,6 +214,8 @@ public class ScreenActivity extends AppCompatActivity {
                 sendIceCandidateToTV(iceCandidate);
             }
         });
+
+//        peerConnectionLocal.addStream(mediaStreamLocal);
 
         VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("video", videoSource);
         peerConnectionLocal.addTrack(videoTrack);
