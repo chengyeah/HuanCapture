@@ -19,6 +19,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.huan.capture.sr.SRDemoActivity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,7 +101,7 @@ public class SplashActivity extends AppCompatActivity {
                 Toast.makeText(this, "请先选择投屏设备", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Intent intent = new Intent(this, PushVideoActivity.class);
+            Intent intent = new Intent(this, SRDemoActivity.class);
             startActivity(intent);
         });
 

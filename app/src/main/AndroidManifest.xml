@@ -40,7 +40,6 @@
 
         <activity android:name="com.huan.capture.OldClientActivity" />
         <activity android:name="com.huan.capture.OldClientActivityV2" />
-        <activity android:name="com.huan.capture.PushVideoActivity" />
 
         <activity android:name=".ScreenActivity" />
 
@@ -50,6 +49,10 @@
 
         <service
             android:name=".ScreenVideoSourceService"
+            android:foregroundServiceType="mediaProjection" />
+
+        <service
+            android:name=".sr.ScreenVideoSourceService"
             android:foregroundServiceType="mediaProjection" />
     </application>
 

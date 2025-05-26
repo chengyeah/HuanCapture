@@ -13,23 +13,28 @@ package org.webrtc;
 import static android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel3;
 import static android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh;
 import static android.media.MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR;
+import static org.webrtc.ContextUtils.getApplicationContext;
 
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaFormat;
 import android.opengl.GLES20;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Surface;
+
 import androidx.annotation.Nullable;
+
+import org.webrtc.ThreadUtils.ThreadChecker;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import org.webrtc.ThreadUtils.ThreadChecker;
 
 /**
  * Android hardware video encoder.
@@ -266,6 +271,8 @@ class HardwareVideoEncoder implements VideoEncoder {
             format.setInteger("level", AVCLevel3);
             break;
           case VideoCodecInfo.H264_CONSTRAINED_BASELINE_3_1:
+            format.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline);
+            format.setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCLevel31);
             break;
           default:
             Logging.w(TAG, "Unknown profile level id: " + profileLevelId);
@@ -585,6 +592,8 @@ class HardwareVideoEncoder implements VideoEncoder {
   }
 
   // Visible for testing.
+  int total;
+  FileOutputStream fos;
   protected void deliverEncodedImage() {
     outputThreadChecker.checkIsOnValidThread();
     try {
@@ -596,6 +605,26 @@ class HardwareVideoEncoder implements VideoEncoder {
         }
         return;
       }
+
+      // 存文件
+      try {
+        if (fos == null) {
+            fos = new FileOutputStream(new File(getApplicationContext().getCacheDir(), "frame.h264"));
+        }
+        byte[] frame = new byte[info.size];
+        codec.getOutputBuffer(index).get(frame);
+        fos.write(frame);
+        fos.flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+//      File file = new File(getApplicationContext().getCacheDir(), String.format("frame_%05d.h264", total++));
+//      try(FileOutputStream fo = new FileOutputStream(file)) {
+//        fo.write(frame);
+//        fo.flush();
+//      }catch (Exception e){
+//        e.printStackTrace();
+//      }
 
       ByteBuffer outputBuffer = codec.getOutputBuffer(index);
       outputBuffer.position(info.offset);

@@ -14,14 +14,18 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaFormat;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.Surface;
+
 import androidx.annotation.Nullable;
+
+import org.webrtc.ThreadUtils.ThreadChecker;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import org.webrtc.ThreadUtils.ThreadChecker;
 
 /**
  * Android hardware video decoder.
@@ -193,6 +197,8 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
     return VideoCodecStatus.OK;
   }
 
+  int rec_count;
+  long rec_time;
   @Override
   public VideoCodecStatus decode(EncodedImage frame, DecodeInfo info) {
     decoderThreadChecker.checkIsOnValidThread();
@@ -236,6 +242,27 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
         return VideoCodecStatus.NO_OUTPUT;
       }
     }
+
+    rec_count++;
+    long time = System.currentTimeMillis();
+    if(time - rec_time >= 1000) {
+      Log.w("RTC_STATS", "接收FPS:" + dec_count);
+      rec_count = 0;
+    }
+    rec_time = time;
+
+    // 存文件
+//    ByteBuffer buffer1 = frame.buffer;
+//    byte[] bytes = new byte[buffer1.remaining()];
+//    buffer1.get(bytes);
+//    File file = new File(getApplicationContext().getCacheDir(), String.format("frame_%05d.h264", total++));
+//    try (FileOutputStream fo = new FileOutputStream(file)) {
+//      fo.write(bytes);
+//      fo.flush();
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
+//    buffer1.rewind();
 
     int index;
     try {
@@ -358,6 +385,8 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
   }
 
   // Visible for testing.
+  int dec_count;
+  long dec_time;
   protected void deliverDecodedFrame() {
     outputThreadChecker.checkIsOnValidThread();
     try {
@@ -383,6 +412,15 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
       if (frameInfo != null) {
         decodeTimeMs = (int) (SystemClock.elapsedRealtime() - frameInfo.decodeStartTimeMs);
         rotation = frameInfo.rotation;
+
+        Log.w("RTC_STATS", "解码耗时:" + decodeTimeMs);
+        dec_count++;
+        long time = System.currentTimeMillis();
+        if(time - dec_time >= 1000) {
+          Log.w("RTC_STATS", "解码FPS:" + dec_count);
+          dec_count = 0;
+        }
+        dec_time = time;
       }
 
       hasDecodedFirstFrame = true;

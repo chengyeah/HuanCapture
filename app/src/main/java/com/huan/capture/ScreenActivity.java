@@ -20,9 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
+import com.huan.capture.sr.webrtc.H264OnlyDecoderFactory;
+import com.huan.capture.sr.webrtc.H264OnlyEncoderFactory;
 
-import org.webrtc.DefaultVideoDecoderFactory;
-import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
@@ -37,8 +37,6 @@ import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
-import org.webrtc.factory.H264OnlyVideoDecoderFactory;
-import org.webrtc.factory.H264OnlyVideoEncoderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,8 +103,8 @@ public class ScreenActivity extends AppCompatActivity {
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         options.networkIgnoreMask = 0;
         peerConnectionFactory = PeerConnectionFactory.builder()
-                .setVideoDecoderFactory(new H264OnlyVideoDecoderFactory(eglBase.getEglBaseContext()))
-                .setVideoEncoderFactory(new H264OnlyVideoEncoderFactory(eglBase.getEglBaseContext()))
+                .setVideoDecoderFactory(new H264OnlyDecoderFactory(eglBase.getEglBaseContext()))
+                .setVideoEncoderFactory(new H264OnlyEncoderFactory(eglBase.getEglBaseContext()))
                 .setOptions(options)
                 .createPeerConnectionFactory();
 
