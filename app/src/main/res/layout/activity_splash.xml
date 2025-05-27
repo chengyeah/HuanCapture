@@ -32,6 +32,7 @@
             android:textColor="@drawable/button_text_selector" />
 
         <Button
+            android:visibility="gone"
             android:id="@+id/btnClient"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,6 +44,7 @@
             android:textColor="@drawable/button_text_selector" />
 
         <Button
+            android:visibility="gone"
             android:id="@+id/btnServer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -54,6 +56,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -94,12 +97,14 @@
 
 
     <EditText
+        android:visibility="gone"
         android:id="@+id/etWsIP"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp" />
 
     <LinearLayout
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">

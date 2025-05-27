@@ -18,7 +18,13 @@ import android.widget.VideoView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.Gson;
 import com.huan.capture.sr.webrtc.H264OnlyDecoderFactory;
 import com.huan.capture.sr.webrtc.H264OnlyEncoderFactory;
@@ -52,7 +58,7 @@ public class ScreenActivity extends AppCompatActivity {
     private final MediaConstraints mediaConstraints = new MediaConstraints();
     private PeerConnectionFactory peerConnectionFactory;
     private PeerConnection peerConnectionLocal;
-    private SurfaceViewRenderer localView;
+//    private SurfaceViewRenderer localView;
     private EglBase eglBase;
     private boolean isOpenPermission = false;
     private VideoCapturer videoCapturer;
@@ -63,6 +69,7 @@ public class ScreenActivity extends AppCompatActivity {
     private Intent serviceIntent;
     private Timer statsTimer;
     private MediaStream mediaStreamLocal;
+    private CameraPreview mPreview;
 
 
     @Override
@@ -108,9 +115,9 @@ public class ScreenActivity extends AppCompatActivity {
                 .setOptions(options)
                 .createPeerConnectionFactory();
 
-        localView = findViewById(R.id.localView);
-        localView.setMirror(false);
-        localView.init(eglBase.getEglBaseContext(), null);
+//        localView = findViewById(R.id.localView);
+//        localView.setMirror(false);
+//        localView.init(eglBase.getEglBaseContext(), null);
 
         initView();
 
@@ -143,6 +150,33 @@ public class ScreenActivity extends AppCompatActivity {
             Intent permissionIntent = projectionManager.createScreenCaptureIntent();
             startActivityForResult(permissionIntent, REQUEST_CODE_SCREEN_CAPTURE);
         });
+
+        PreviewView previewView = findViewById(R.id.previewView);
+        startCamera(previewView);
+    }
+
+    private void startCamera(PreviewView previewView) {
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+
+                Preview preview = new Preview.Builder().build();
+
+                CameraSelector cameraSelector = new CameraSelector.Builder()
+                        .requireLensFacing(CameraSelector.LENS_FACING_FRONT) // 前置摄像头
+                        .build();
+
+                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+                cameraProvider.unbindAll();
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, ContextCompat.getMainExecutor(this));
     }
 
     @Override
@@ -182,10 +216,10 @@ public class ScreenActivity extends AppCompatActivity {
         SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBase.getEglBaseContext());
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(240, 520, 20);
+        videoCapturer.startCapture(720, 1080, 20);
 
         videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
-        videoSource.adaptOutputFormat(240, 520, 20);
+        videoSource.adaptOutputFormat(720, 1080, 20);
 
         mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
         mediaStreamLocal.addTrack(videoTrack);
@@ -232,13 +266,13 @@ public class ScreenActivity extends AppCompatActivity {
     }
 
     private String applyBitrateSettings(String sdp) {
-        sdp = sdp.replace("a=rtpmap:96 H264/90000",
-                "a=rtpmap:96 H264/90000\r\na=framerate:15");
-        // 设置码率参数
-        sdp = sdp.replace(
-                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
-                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;x-google-start-bitrate=300;x-google-min-bitrate=300;x-google-max-bitrate=300"
-        );
+//        sdp = sdp.replace("a=rtpmap:96 H264/90000",
+//                "a=rtpmap:96 H264/90000\r\na=framerate:15");
+//        // 设置码率参数
+//        sdp = sdp.replace(
+//                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
+//                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;x-google-start-bitrate=300;x-google-min-bitrate=300;x-google-max-bitrate=300"
+//        );
         return sdp;
     }
 
@@ -323,10 +357,10 @@ public class ScreenActivity extends AppCompatActivity {
             eglBase = null;
         }
 
-        if (localView != null) {
-            localView.release();
-            localView = null;
-        }
+//        if (localView != null) {
+//            localView.release();
+//            localView = null;
+//        }
 
         if (serviceIntent != null) {
             stopService(serviceIntent);

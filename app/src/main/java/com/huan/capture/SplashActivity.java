@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -46,6 +47,14 @@ public class SplashActivity extends AppCompatActivity {
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
+
+        EsDevice device = new EsDevice();
+        device.setDeviceName("扩展屏(SMARTISAN) 743");
+        device.setDeviceIp("192.168.40.147");
+        device.setDevicePort(5000);
+        device.setFrom("com.huan.capture");
+        device.setVersion(0);
+        ConfigParams.mEsDevice = device;
     }
 
     private void initialize() {

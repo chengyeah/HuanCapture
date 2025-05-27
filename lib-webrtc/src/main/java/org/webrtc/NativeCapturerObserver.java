@@ -10,6 +10,8 @@
 
 package org.webrtc;
 
+import android.util.Log;
+
 import org.webrtc.VideoFrame;
 
 /**
@@ -42,7 +44,6 @@ class NativeCapturerObserver implements CapturerObserver {
       // Drop frame.
       return;
     }
-
     final VideoFrame.Buffer adaptedBuffer =
         frame.getBuffer().cropAndScale(parameters.cropX, parameters.cropY, parameters.cropWidth,
             parameters.cropHeight, parameters.scaleWidth, parameters.scaleHeight);
