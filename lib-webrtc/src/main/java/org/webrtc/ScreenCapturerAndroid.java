@@ -17,6 +17,7 @@ import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.util.Log;
 import android.view.Surface;
 import androidx.annotation.Nullable;
 
@@ -198,6 +199,7 @@ public class ScreenCapturerAndroid implements VideoCapturer, VideoSink {
   @Override
   public void onFrame(VideoFrame frame) {
     numCapturedFrames++;
+    Log.i("--==>",  "------>onFrame");
     capturerObserver.onFrameCaptured(frame);
   }
 
