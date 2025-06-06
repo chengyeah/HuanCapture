@@ -17,6 +17,8 @@ import static org.webrtc.MediaCodecUtils.QCOM_PREFIX;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,9 +78,10 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
                                      boolean enableH264HighProfile, @Nullable Predicate<MediaCodecInfo> codecAllowedPredicate) {
     // Texture mode requires EglBase14.
     if (sharedContext instanceof EglBase14.Context) {
+      Log.i("--==>",  "Using shared EglBase.Context.");
       this.sharedContext = (EglBase14.Context) sharedContext;
     } else {
-      Logging.w(TAG, "No shared EglBase.Context.  Encoders will not use texture mode.");
+      Log.i("--==>", "No shared EglBase.Context.  Encoders will not use texture mode.");
       this.sharedContext = null;
     }
     this.enableIntelVp8Encoder = enableIntelVp8Encoder;

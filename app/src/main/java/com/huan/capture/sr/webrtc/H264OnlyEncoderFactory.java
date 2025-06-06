@@ -30,7 +30,7 @@ public class H264OnlyEncoderFactory implements VideoEncoderFactory {
                             origin.width,
                             origin.height,
                             origin.startBitrate,
-                            WebRTCManager.FPS,
+                            20,
                             origin.numberOfSimulcastStreams,
                             origin.automaticResizeOn,
                             origin.capabilities

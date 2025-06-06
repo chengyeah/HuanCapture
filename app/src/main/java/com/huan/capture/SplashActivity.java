@@ -2,11 +2,14 @@ package com.huan.capture;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -124,9 +127,15 @@ public class SplashActivity extends AppCompatActivity {
 
         Button btnDeviceInfo = findViewById(R.id.btnDeviceInfo);
         btnDeviceInfo.setOnClickListener(view -> {
+            //获取屏幕分辨率
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+            windowManager.getDefaultDisplay().getRealMetrics(displayMetrics);
+            int width = displayMetrics.widthPixels;
+            int height = displayMetrics.heightPixels;
             EsCommand.CmdArgs args = new EsCommand.CmdArgs("")
-                    .put("screenWidth", "1080")
-                    .put("screenHeight", "1920")
+                    .put("screenWidth", width)
+                    .put("screenHeight", height)
                     .put("deviceName", "huan")
                     .put("deviceVersion", "1.0")
                     .put("osType", "Android");

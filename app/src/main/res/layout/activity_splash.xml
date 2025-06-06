@@ -32,7 +32,6 @@
             android:textColor="@drawable/button_text_selector" />
 
         <Button
-            android:visibility="gone"
             android:id="@+id/btnClient"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -41,10 +40,10 @@
             android:layout_weight="1"
             android:background="@drawable/button_selector"
             android:text="摄像头推流"
-            android:textColor="@drawable/button_text_selector" />
+            android:textColor="@drawable/button_text_selector"
+            android:visibility="gone" />
 
         <Button
-            android:visibility="gone"
             android:id="@+id/btnServer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -52,11 +51,11 @@
             android:layout_weight="1"
             android:background="@drawable/button_selector"
             android:text="测试二"
-            android:textColor="@drawable/button_text_selector" />
+            android:textColor="@drawable/button_text_selector"
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -97,17 +96,17 @@
 
 
     <EditText
-        android:visibility="gone"
         android:id="@+id/etWsIP"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp" />
+        android:layout_marginTop="6dp"
+        android:visibility="gone" />
 
     <LinearLayout
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <Button
             android:id="@+id/btnWsTv"

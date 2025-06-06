@@ -19,12 +19,19 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
     }
 }
 
@@ -38,8 +45,9 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation project(path: ':lib-webrtc')
+//    implementation project(path: ':lib-webrtc')
 //    implementation 'org.webrtc:google-webrtc:1.0.32006'
+    implementation(name: 'lib-webrtc-release', ext: 'aar')
 
     implementation 'org.java-websocket:Java-WebSocket:1.5.2'
     implementation 'com.extscreen.sdk:messenger-client:1.1.4'

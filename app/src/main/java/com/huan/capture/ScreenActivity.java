@@ -39,7 +39,6 @@ import org.webrtc.RTCStats;
 import org.webrtc.ScreenCapturerAndroid;
 import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceTextureHelper;
-import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
@@ -271,7 +270,7 @@ public class ScreenActivity extends AppCompatActivity {
 //        // 设置码率参数
 //        sdp = sdp.replace(
 //                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
-//                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;x-google-start-bitrate=300;x-google-min-bitrate=300;x-google-max-bitrate=300"
+//                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;x-google-start-bitrate=800;x-google-min-bitrate=800;x-google-max-bitrate=1500"
 //        );
         return sdp;
     }
