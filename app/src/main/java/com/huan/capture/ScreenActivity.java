@@ -57,7 +57,7 @@ public class ScreenActivity extends AppCompatActivity {
     private final MediaConstraints mediaConstraints = new MediaConstraints();
     private PeerConnectionFactory peerConnectionFactory;
     private PeerConnection peerConnectionLocal;
-//    private SurfaceViewRenderer localView;
+    //    private SurfaceViewRenderer localView;
     private EglBase eglBase;
     private boolean isOpenPermission = false;
     private VideoCapturer videoCapturer;
@@ -208,6 +208,15 @@ public class ScreenActivity extends AppCompatActivity {
 
                 initScreenCapture();
             }
+        } else {
+            Toast.makeText(this, "请先打开权限", Toast.LENGTH_SHORT).show();
+            EsCommand.CmdArgs args = new EsCommand.CmdArgs("")
+                    .put("status", "reject")
+                    .put("message", "权限未打开");
+
+            EsCommand cmd = EsCommand.makeCustomCommand("OnPermissionReject")
+                    .setEventData(args);
+            EsMessenger.get().sendCommand(this, ConfigParams.mEsDevice, cmd);
         }
     }
 

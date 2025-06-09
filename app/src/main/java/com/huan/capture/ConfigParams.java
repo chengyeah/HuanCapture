@@ -30,15 +30,26 @@ public class ConfigParams {
         }
     }
 
-    public void sendDeviceInfo(EsDevice esDevice){
+    public void sendDeviceInfo(EsDevice esDevice) {
         if (mListener != null) {
             mListener.onDeviceInfo(esDevice);
         }
     }
 
-    public interface OnClientMessageListener {
-        default void onMessage(EsEvent esEvent){}
+    public void sendPingCallback(String deviceIp, int devicePort) {
+        if (mListener != null) {
+            mListener.onPingCallback(deviceIp, devicePort);
+        }
+    }
 
-        default void onDeviceInfo(EsDevice esDevice){}
+    public interface OnClientMessageListener {
+        default void onMessage(EsEvent esEvent) {
+        }
+
+        default void onDeviceInfo(EsDevice esDevice) {
+        }
+
+        default void onPingCallback(String deviceIp, int devicePort) {
+        }
     }
 }

@@ -1,6 +1,9 @@
 package com.huan.capture;
 
 import android.app.Application;
+import android.widget.Toast;
+
+import java.util.Objects;
 
 import eskit.sdk.support.messenger.client.EsMessenger;
 import eskit.sdk.support.messenger.client.IEsMessenger;
@@ -14,8 +17,8 @@ public class App extends Application {
 
         EsMessenger.get().setMessengerCallback(new IEsMessenger.MessengerCallback() {
             @Override
-            public void onPingResponse(String s, int i) {
-
+            public void onPingResponse(String deviceIp, int devicePort) {
+                ConfigParams.getInstance().sendPingCallback(deviceIp,devicePort);
             }
 
             @Override

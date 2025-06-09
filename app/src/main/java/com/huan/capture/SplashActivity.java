@@ -27,6 +27,7 @@ import com.huan.capture.sr.SRDemoActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import eskit.sdk.support.messenger.client.EsMessenger;
 import eskit.sdk.support.messenger.client.bean.EsDevice;
@@ -52,11 +53,8 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         EsDevice device = new EsDevice();
-        device.setDeviceName("扩展屏(SMARTISAN) 743");
-        device.setDeviceIp("192.168.40.147");
+        device.setDeviceIp("192.168.40.233");
         device.setDevicePort(5000);
-        device.setFrom("com.huan.capture");
-        device.setVersion(0);
         ConfigParams.mEsDevice = device;
     }
 
@@ -68,6 +66,18 @@ public class SplashActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (deviceAdapter != null) {
                         deviceAdapter.setData(mList);
+                    }
+                });
+            }
+
+            @Override
+            public void onPingCallback(String deviceIp, int devicePort) {
+                runOnUiThread(() -> {
+                    if (Objects.equals(ConfigParams.mEsDevice.getDeviceIp(), deviceIp) &&
+                            ConfigParams.mEsDevice.getDevicePort() == devicePort) {
+                        Toast.makeText(SplashActivity.this, "设备在线", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(SplashActivity.this, "设备不在线", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -187,6 +197,11 @@ public class SplashActivity extends AppCompatActivity {
             Config.SOCKET_IP = etWsIP.getText().toString().trim();
             Intent intent = new Intent(this, OldClientActivityV2.class);
             startActivity(intent);
+        });
+
+        Button btnCheckUdp = findViewById(R.id.btnCheckUdp);
+        btnCheckUdp.setOnClickListener(view -> {
+            EsMessenger.get().ping(this, ConfigParams.mEsDevice);
         });
     }
 
