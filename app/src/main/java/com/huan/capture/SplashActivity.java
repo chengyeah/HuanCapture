@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowManager;
@@ -24,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.huan.capture.sr.SRDemoActivity;
+import com.king.camera.scan.CameraScan;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,7 @@ import eskit.sdk.support.messenger.client.core.EsCommand;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
+    public static final int REQUEST_CODE_SCAN = 0x01;
     private final List<EsDevice> mList = new ArrayList<>();
     private DeviceAdapter deviceAdapter;
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
@@ -52,10 +56,41 @@ public class SplashActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
 
-        EsDevice device = new EsDevice();
-        device.setDeviceIp("192.168.40.233");
-        device.setDevicePort(5000);
-        ConfigParams.mEsDevice = device;
+//        EsDevice device = new EsDevice();
+//        device.setDeviceIp("192.168.40.233");
+//        device.setDevicePort(5000);
+//        ConfigParams.mEsDevice = device;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && data != null) {
+            switch (requestCode) {
+                case REQUEST_CODE_SCAN:
+                    String result = CameraScan.parseScanResult(data);
+                    if (result.contains("https://web.extscreen.com")) {
+                        Intent webIntent = new Intent(this, WebviewActivity.class);
+                        webIntent.putExtra("url", result);
+                        startActivity(webIntent);
+                        return;
+                    }
+                    Log.i("--==>", "onActivityResult: " + result);
+                    Uri uri = Uri.parse(result);
+
+                    String ip = uri.getQueryParameter("ip");
+                    String port = uri.getQueryParameter("port");
+                    Toast.makeText(this, "已选择设备：" + ip + ":" + port, Toast.LENGTH_SHORT).show();
+                    if (!TextUtils.isEmpty(ip) && !TextUtils.isEmpty(port)) {
+                        EsDevice device = new EsDevice();
+                        device.setDeviceIp(ip.replaceAll("-", "."));
+                        device.setDevicePort(Integer.parseInt(port));
+                        ConfigParams.mEsDevice = device;
+                    }
+                    break;
+            }
+
+        }
     }
 
     private void initialize() {
@@ -180,21 +215,21 @@ public class SplashActivity extends AppCompatActivity {
         EditText etWsIP = findViewById(R.id.etWsIP);
         Button btnWsTv = findViewById(R.id.btnWsTv);
         btnWsTv.setOnClickListener(view -> {
-            Config.SOCKET_IP = etWsIP.getText().toString().trim();
+//            Config.SOCKET_IP = etWsIP.getText().toString().trim();
             Intent intent = new Intent(this, TVActivity.class);
             startActivity(intent);
         });
 
         Button btnWsCamera = findViewById(R.id.btnWsCamera);
         btnWsCamera.setOnClickListener(view -> {
-            Config.SOCKET_IP = etWsIP.getText().toString().trim();
+//            Config.SOCKET_IP = etWsIP.getText().toString().trim();
             Intent intent = new Intent(this, OldClientActivity.class);
             startActivity(intent);
         });
 
         Button btnWsScreen = findViewById(R.id.btnWsScreen);
         btnWsScreen.setOnClickListener(view -> {
-            Config.SOCKET_IP = etWsIP.getText().toString().trim();
+//            Config.SOCKET_IP = etWsIP.getText().toString().trim();
             Intent intent = new Intent(this, OldClientActivityV2.class);
             startActivity(intent);
         });
@@ -202,6 +237,12 @@ public class SplashActivity extends AppCompatActivity {
         Button btnCheckUdp = findViewById(R.id.btnCheckUdp);
         btnCheckUdp.setOnClickListener(view -> {
             EsMessenger.get().ping(this, ConfigParams.mEsDevice);
+        });
+
+        Button btnQRCode = findViewById(R.id.btnScanQrCode);
+        btnQRCode.setOnClickListener(view -> {
+            Intent intent = new Intent(this, QRCodeScanActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_SCAN);
         });
     }
 

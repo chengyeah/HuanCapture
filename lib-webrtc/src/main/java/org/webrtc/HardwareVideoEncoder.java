@@ -270,6 +270,7 @@ class HardwareVideoEncoder implements VideoEncoder {
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, keyFrameIntervalSec);
             if (codecType == VideoCodecMimeType.H264) {
                 String profileLevelId = params.get(VideoCodecInfo.H264_FMTP_PROFILE_LEVEL_ID);
+                Log.i("--==>", "profileLevelId is : " + profileLevelId);
                 if (profileLevelId == null) {
                     profileLevelId = VideoCodecInfo.H264_CONSTRAINED_BASELINE_3_1;
                 }
@@ -279,6 +280,7 @@ class HardwareVideoEncoder implements VideoEncoder {
                         format.setInteger("level", AVCLevel3);
                         break;
                     case VideoCodecInfo.H264_CONSTRAINED_BASELINE_3_1:
+                        Log.i("--==>", "profileLevelId is : " + VideoCodecInfo.H264_CONSTRAINED_BASELINE_3_1);
                         format.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline);
                         format.setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCLevel31);
                         break;
@@ -720,7 +722,7 @@ class HardwareVideoEncoder implements VideoEncoder {
     }
 
     private void releaseCodecOnOutputThread() {
-        Log.i("--==>","------releaseCodecOnOutputThread");
+        Log.i("--==>", "------releaseCodecOnOutputThread");
         outputThreadChecker.checkIsOnValidThread();
         Logging.d(TAG, "Releasing MediaCodec on output thread");
         outputBuffersBusyCount.waitForZero();

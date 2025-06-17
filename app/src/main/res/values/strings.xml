@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">HuanCapture</string>
+    <string name="app_accessibility_desc">辅助功能说明</string>
 </resources>

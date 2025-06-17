@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,22 +33,23 @@ import org.webrtc.VideoTrack;
 import java.util.ArrayList;
 import java.util.List;
 
+import eskit.sdk.support.messenger.client.EsMessenger;
+import eskit.sdk.support.messenger.client.core.EsCommand;
+
 /**
  * socket  + WebRTC + 屏幕共享
  */
 public class OldClientActivityV2 extends AppCompatActivity {
     private PeerConnectionFactory peerConnectionFactory;
     private PeerConnection peerConnectionLocal;
-    private SurfaceViewRenderer localView;
-    private MediaStream mediaStreamLocal;
     private EglBase eglBase;
     private WebSocketClientManager webSocketManager;
     private VideoSource videoSource;
     private MediaProjectionManager projectionManager;
     private static final int REQUEST_CODE_SCREEN_CAPTURE = 1;
     private VideoCapturer videoCapturer;
-    private VideoTrack videoTrack;
     private Intent serviceIntent;
+    private boolean isOpenPermission;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,8 +62,6 @@ public class OldClientActivityV2 extends AppCompatActivity {
         webSocketManager.setOnIceCandidateReceivedListener(this::handleIceCandidate);
 
         eglBase = EglBase.create();
-        eglBase.createDummyPbufferSurface();
-        eglBase.makeCurrent();
 
         // 第一步：创建PeerConnectionFactory
         PeerConnectionFactory.initialize(PeerConnectionFactory.InitializationOptions
@@ -69,22 +69,18 @@ public class OldClientActivityV2 extends AppCompatActivity {
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         DefaultVideoEncoderFactory defaultVideoEncoderFactory =
-                new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true);
-        DefaultVideoDecoderFactory defaultVideoDecoderFactory =
-                new DefaultVideoDecoderFactory(eglBase.getEglBaseContext());
+                new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), false, true);
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
                 .setVideoEncoderFactory(defaultVideoEncoderFactory)
-                .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .createPeerConnectionFactory();
-
-        localView = findViewById(R.id.localView);
-        localView.setMirror(true);
-        localView.init(eglBase.getEglBaseContext(), null);
-
 
         Button btnCall = findViewById(R.id.btnCall);
         btnCall.setOnClickListener(view -> {
+            if (!isOpenPermission) {
+                Toast.makeText(this, "请先打开权限", Toast.LENGTH_SHORT).show();
+                return;
+            }
             call();
         });
 
@@ -100,11 +96,11 @@ public class OldClientActivityV2 extends AppCompatActivity {
         SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBase.getEglBaseContext());
         videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(720, 1280, 15);
-        videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
+        videoCapturer.startCapture(720, 1280, 20);
+        VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
         videoSource.adaptOutputFormat(VideoSource.AspectRatio.UNDEFINED, null, VideoSource.AspectRatio.UNDEFINED, null, 15);
 
-        mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
+        MediaStream mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
         mediaStreamLocal.addTrack(videoTrack);
 
         if (peerConnectionLocal != null) {
@@ -121,6 +117,7 @@ public class OldClientActivityV2 extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_SCREEN_CAPTURE && resultCode == RESULT_OK && data != null) {
+            isOpenPermission = true;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ScreenCaptureService.setCallback(_videoTrack -> runOnUiThread(() -> {
                     videoCapturer = _videoTrack;
@@ -145,6 +142,15 @@ public class OldClientActivityV2 extends AppCompatActivity {
 
                 initScreenCapture();
             }
+        } else {
+            Toast.makeText(this, "请先打开权限", Toast.LENGTH_SHORT).show();
+            EsCommand.CmdArgs args = new EsCommand.CmdArgs("")
+                    .put("status", "reject")
+                    .put("message", "权限未打开");
+
+            EsCommand cmd = EsCommand.makeCustomCommand("OnPermissionReject")
+                    .setEventData(args);
+            EsMessenger.get().sendCommand(this, ConfigParams.mEsDevice, cmd);
         }
     }
 
@@ -154,19 +160,11 @@ public class OldClientActivityV2 extends AppCompatActivity {
             @Override
             public void onIceCandidate(IceCandidate iceCandidate) {
                 super.onIceCandidate(iceCandidate);
+                Log.i("--==>", "接收到onIceCandidate回调 is：" + iceCandidate.toString());
                 // 发送 ICE 到 TV 端
                 sendIceCandidateToTV(iceCandidate);
             }
-
-            @Override
-            public void onAddStream(MediaStream mediaStream) {
-                super.onAddStream(mediaStream);
-                // 不需要处理远程流
-            }
         });
-
-        // 只向 peerConnectionLocal 添加本地媒体流
-//        peerConnectionLocal.addStream(localMediaStream);
 
         VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("video", videoSource);
         peerConnectionLocal.addTrack(videoTrack);
@@ -175,9 +173,12 @@ public class OldClientActivityV2 extends AppCompatActivity {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
-                peerConnectionLocal.setLocalDescription(new SdpAdapter("local set local"), sessionDescription);
-                // 发送 offer 到 TV 端
-                sendOfferToTV(sessionDescription);
+                SessionDescription sdp = new SessionDescription(sessionDescription.type, sessionDescription.description);
+                peerConnectionLocal.setLocalDescription(new SdpAdapter("local set local", () -> {
+                    // 发送 offer 到 TV 端
+                    sendOfferToTV(sdp);
+                }), sdp);
+
             }
         }, new MediaConstraints());
     }
@@ -201,6 +202,14 @@ public class OldClientActivityV2 extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (peerConnectionLocal != null) {
+            peerConnectionLocal.dispose();
+        }
+
+        if (peerConnectionFactory != null) {
+            peerConnectionFactory.dispose();
+        }
+
         if (eglBase != null) {
             eglBase.release();
         }

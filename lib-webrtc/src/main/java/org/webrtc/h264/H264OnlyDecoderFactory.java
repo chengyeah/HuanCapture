@@ -1,4 +1,4 @@
-package com.huan.capture.sr.webrtc;
+package org.webrtc.h264;
 
 import org.webrtc.DefaultVideoDecoderFactory;
 import org.webrtc.EglBase;

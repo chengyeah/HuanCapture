@@ -18,11 +18,11 @@
     <application
         android:name="com.huan.capture.App"
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:hardwareAccelerated="true">
+        android:theme="@style/AppTheme">
         <activity
             android:name="com.huan.capture.SplashActivity"
             android:exported="true">
@@ -42,6 +42,8 @@
         <activity android:name="com.huan.capture.OldClientActivityV2" />
 
         <activity android:name=".ScreenActivity" />
+        <activity android:name=".QRCodeScanActivity" />
+        <activity android:name=".WebviewActivity" />
 
         <service
             android:name=".ScreenCaptureService"
@@ -54,6 +56,19 @@
         <service
             android:name=".sr.ScreenVideoSourceService"
             android:foregroundServiceType="mediaProjection" />
+
+        <service
+            android:name=".accessibility.AuxiliaryService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/auto_click_auxiliary" />
+        </service>
     </application>
 
 </manifest>

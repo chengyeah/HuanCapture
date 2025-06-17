@@ -57,7 +57,7 @@ public class OldClientActivity extends AppCompatActivity {
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         DefaultVideoEncoderFactory defaultVideoEncoderFactory =
-                new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true);
+                new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), false, true);
         DefaultVideoDecoderFactory defaultVideoDecoderFactory =
                 new DefaultVideoDecoderFactory(eglBase.getEglBaseContext());
         peerConnectionFactory = PeerConnectionFactory.builder()

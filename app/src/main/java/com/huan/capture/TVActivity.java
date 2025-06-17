@@ -20,6 +20,7 @@ import org.webrtc.RtpTransceiver;
 import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoTrack;
+import org.webrtc.h264.H264OnlyDecoderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,22 +43,16 @@ public class TVActivity extends AppCompatActivity {
         initSocket();
 
         eglBase = EglBase.create();
-        eglBase.createDummyPbufferSurface();
-        eglBase.makeCurrent();
 
         // 第一步：创建PeerConnectionFactory
         PeerConnectionFactory.initialize(PeerConnectionFactory.InitializationOptions
                 .builder(this)
                 .createInitializationOptions());
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
-        DefaultVideoEncoderFactory defaultVideoEncoderFactory =
-                new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), true, true);
-        DefaultVideoDecoderFactory defaultVideoDecoderFactory =
-                new DefaultVideoDecoderFactory(eglBase.getEglBaseContext());
+
         peerConnectionFactory = PeerConnectionFactory.builder()
                 .setOptions(options)
-                .setVideoEncoderFactory(defaultVideoEncoderFactory)
-                .setVideoDecoderFactory(defaultVideoDecoderFactory)
+                .setVideoDecoderFactory(new H264OnlyDecoderFactory(eglBase.getEglBaseContext()))
                 .createPeerConnectionFactory();
 
         remoteView = findViewById(R.id.remoteView);

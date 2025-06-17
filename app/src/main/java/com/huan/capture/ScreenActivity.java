@@ -26,9 +26,9 @@ import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.Gson;
-import com.huan.capture.sr.webrtc.H264OnlyDecoderFactory;
-import com.huan.capture.sr.webrtc.H264OnlyEncoderFactory;
 
+import org.webrtc.DefaultVideoDecoderFactory;
+import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
@@ -82,7 +82,6 @@ public class ScreenActivity extends AppCompatActivity {
         mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("MaxBitrateBps", "100000"));
         mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("enableCpuOveruseDetection", "false"));
 
-
         ConfigParams.getInstance().setOnClientMessageListener(new ConfigParams.OnClientMessageListener() {
             @Override
             public void onMessage(EsEvent esEvent) {
@@ -109,8 +108,8 @@ public class ScreenActivity extends AppCompatActivity {
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         options.networkIgnoreMask = 0;
         peerConnectionFactory = PeerConnectionFactory.builder()
-                .setVideoDecoderFactory(new H264OnlyDecoderFactory(eglBase.getEglBaseContext()))
-                .setVideoEncoderFactory(new H264OnlyEncoderFactory(eglBase.getEglBaseContext()))
+                .setVideoEncoderFactory(new DefaultVideoEncoderFactory(eglBase.getEglBaseContext(), false, true))
+                .setVideoDecoderFactory(new DefaultVideoDecoderFactory(eglBase.getEglBaseContext()))
                 .setOptions(options)
                 .createPeerConnectionFactory();
 
@@ -279,7 +278,7 @@ public class ScreenActivity extends AppCompatActivity {
 //        // 设置码率参数
 //        sdp = sdp.replace(
 //                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
-//                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;x-google-start-bitrate=800;x-google-min-bitrate=800;x-google-max-bitrate=1500"
+//                "a=fmtp:96 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;x-google-start-bitrate=200;x-google-min-bitrate=100;x-google-max-bitrate=300"
 //        );
         return sdp;
     }
