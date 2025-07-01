@@ -458,25 +458,33 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
     }
   }
 
-  @Override
-  public void onFrame(VideoFrame frame) {
-    final VideoFrame newFrame;
-    final Integer decodeTimeMs;
-    final long timestampNs;
-    synchronized (renderedTextureMetadataLock) {
-      if (renderedTextureMetadata == null) {
-        throw new IllegalStateException(
-            "Rendered texture metadata was null in onTextureFrameAvailable.");
-      }
-      timestampNs = renderedTextureMetadata.presentationTimestampUs * 1000;
-      decodeTimeMs = renderedTextureMetadata.decodeTimeMs;
-      renderedTextureMetadata = null;
+    @Override
+    public void onFrame(VideoFrame frame) {
+        try {
+            final long timestampNs;
+            final Integer decodeTimeMs;
+            synchronized (renderedTextureMetadataLock) {
+                if (renderedTextureMetadata == null) {
+                    Log.e("--==>", "❌ renderedTextureMetadata is null, dropping frame to avoid crash");
+                    return;
+                }
+                timestampNs = renderedTextureMetadata.presentationTimestampUs * 1000;
+                decodeTimeMs = renderedTextureMetadata.decodeTimeMs;
+                renderedTextureMetadata = null;
+            }
+
+            // 构造带时间戳的新帧
+            final VideoFrame frameWithModifiedTimeStamp =
+                    new VideoFrame(frame.getBuffer(), frame.getRotation(), timestampNs);
+
+            Log.i("--==>", "onFrame " + frame.getRotatedWidth() + " x " + frame.getRotatedHeight());
+            callback.onDecodedFrame(frameWithModifiedTimeStamp, decodeTimeMs, null);
+
+        } catch (Exception e) {
+            Log.e("--==>", "🔥 Error in onFrame: " + e.getMessage(), e);
+            // 如果你想收集异常统计或进行降级处理，也可在这里做
+        }
     }
-    // Change timestamp of frame.
-    final VideoFrame frameWithModifiedTimeStamp =
-        new VideoFrame(frame.getBuffer(), frame.getRotation(), timestampNs);
-    callback.onDecodedFrame(frameWithModifiedTimeStamp, decodeTimeMs, null /* qp */);
-  }
 
   private void deliverByteFrame(
       int index, MediaCodec.BufferInfo info, int rotation, Integer decodeTimeMs) {
@@ -703,9 +711,9 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
     return JavaI420Buffer.allocate(width, height);
   }
 
-  // Visible for testing.
-  protected void copyPlane(
-      ByteBuffer src, int srcStride, ByteBuffer dst, int dstStride, int width, int height) {
-    YuvHelper.copyPlane(src, srcStride, dst, dstStride, width, height);
-  }
+    // Visible for testing.
+    protected void copyPlane(
+            ByteBuffer src, int srcStride, ByteBuffer dst, int dstStride, int width, int height) {
+        YuvHelper.copyPlane(src, srcStride, dst, dstStride, width, height);
+    }
 }

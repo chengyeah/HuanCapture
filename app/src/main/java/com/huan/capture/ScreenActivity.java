@@ -67,7 +67,6 @@ public class ScreenActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_SCREEN_CAPTURE = 1;
     private Intent serviceIntent;
     private Timer statsTimer;
-    private MediaStream mediaStreamLocal;
     private CameraPreview mPreview;
 
 
@@ -228,7 +227,7 @@ public class ScreenActivity extends AppCompatActivity {
         videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
         videoSource.adaptOutputFormat(720, 1080, 20);
 
-        mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
+        MediaStream mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
         mediaStreamLocal.addTrack(videoTrack);
 
         if (peerConnectionLocal != null) {
