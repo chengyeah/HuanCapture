@@ -2,6 +2,7 @@ package com.huan.capture.webview;
 
 import android.app.Application;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.uc.webview.base.UCKnownException;
 import com.uc.webview.export.extension.GlobalSettings;
@@ -15,14 +16,21 @@ import java.io.File;
 
 public class App extends Application {
     private String authKey = "Zd3SKoKMMocnOBsZGFB/toFxBncyb52nOUojSSGxt7xGnQKKG6IjDpoHy+3bl1KhLTHwkyXhLVAIspTtJEpipw==";
+    //32
+//    private String u4Url = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/03/libkernelu4_zip_uc_arm32.so";
+//    private String u4PlayerUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/04/ApolloSo_player_32.zip";
+
+    //64
+    private String u4Url = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/03/libkernelu4_zip_uc_arm64.so";
+    private String u4PlayerUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/01/ApolloSo_player.zip";
 
     @Override
     public void onCreate() {
         super.onCreate();
         initU4();
-        initU4Player();
         initCloudModel();
     }
+
     private void initU4() {
         U4Engine.enableLog(true);
         GlobalSettings
@@ -57,12 +65,13 @@ public class App extends Application {
 
     private void initU4Player() {
         Log.i("--==>", "initU4Player");
-        String downloadUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/01/ApolloSo_player.zip";
+//        String downloadUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/04/ApolloSo_player_32.zip";
+//        String downloadUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/01/ApolloSo_player.zip";
         UCPlayer.createUpdater()
                 // 首先设置 ApplicationContext
                 .setContext(getApplicationContext())
                 // 设置下载链接，只支持 zip 格式
-                .setUrl(downloadUrl)
+                .setUrl(u4PlayerUrl)
                 // 监听初始化状态的回调
                 .setClient(new UCPlayer.UpdaterClient() {
                     @Override
@@ -98,7 +107,8 @@ public class App extends Application {
                         // 初始化完成
                         Log.i("--==>", "player onSuccess is :" + dirPath);
                         // 将路径设置给内核，必须的。
-//                        UCPlayer.setLibPath(dirPath);
+                        UCPlayer.setLibPath(dirPath);
+
                     }
 
                     @Override
@@ -112,14 +122,17 @@ public class App extends Application {
     }
 
     private void initCloudModel() {
-        String downloadUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/06/30/libkernelu4_zip_uc.so";
+//        String downloadUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/06/30/libkernelu4_zip_uc.so";
+
+//        String downloadUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/03/libkernelu4_zip_uc_arm32.so";
+//        String downloadUrl = "https://extcdn.hsrc.tv/extend_screen/files/plugin/2025/07/03/libkernelu4_zip_uc_arm64.so";
         U4Engine.createInitializer()
                 // 首先设置 ApplicationContext
                 .setContext(getApplicationContext())
                 // 设置授权码
                 .setAuthKey(authKey)
                 // 设置下载链接，只支持 zip 格式
-                .setUrl(downloadUrl)
+                .setUrl(u4Url)
                 // 监听初始化状态的回调
                 .setClient(new U4Engine.InitializerClient() {
                     @Override
@@ -185,6 +198,7 @@ public class App extends Application {
                     public void onSuccess(IRunningCoreInfo info) {
                         Log.i("--==>", "onSuccess: " + info);
                         // 初始化流程完成，且成功，可开始使用 U4 WebView
+                        initU4Player();
                     }
 
                     @Override

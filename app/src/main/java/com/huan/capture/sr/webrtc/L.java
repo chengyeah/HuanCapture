@@ -1,1 +1,0 @@
-package com.huan.capture.sr.webrtc;import org.webrtc.Logging;/** * <br> * * <br> */public class L {    private static final String TAG = "[-sunrain-]";    public static void logD(String msg) {        Logging.d(TAG, String.valueOf(msg));    }}
